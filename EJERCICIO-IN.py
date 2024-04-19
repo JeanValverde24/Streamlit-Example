@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
+# Datos de productos y ventas
 productos = {
     'Articulos': ['Cremalleras', 'Baterías', 'Faros', 'Radiadores'],
     'Stock': [250, 46, 25, 145],
@@ -20,13 +20,18 @@ ventas = {
 ventas_df = pd.DataFrame(ventas)
 
 precios = {'Cremalleras': 275.00, 'Baterías': 180.00, 'Faros': 90.00, 'Radiadores': 150.00}
+
 ventas_df['Ingresos'] = (ventas_df.drop('Mes', axis=1) * pd.Series(precios)).sum(axis=1)
-ventas_df['Egresos'] = 0.6 * ventas_df['Ingresos']
+ingresos_totales = 60660.00
+
+egresos_totales = ingresos_totales * 0.5
+ganancia_neta = ingresos_totales - egresos_totales
+
+ventas_df['Egresos'] = ventas_df['Ingresos'] * (egresos_totales / ingresos_totales)
 
 st.set_page_config(page_title="Ventas de Autopartes", layout="wide")
 
 st.title("Ventas de Autopartes")
-
 st.subheader("Tabla de Productos y Stock")
 st.table(productos_df)
 
@@ -35,7 +40,7 @@ st.table(ventas_df.drop(['Ingresos', 'Egresos'], axis=1).applymap(lambda x: f"S/
 
 st.subheader("Ingresos y Egresos por Mes (en S/)")
 fig, ax = plt.subplots()
-sns.barplot(data=ventas_df[['Mes', 'Ingresos', 'Egresos']].melt(id_vars='Mes'), x='Mes', y='value', hue='variable', ax=ax)
+ventas_df[['Mes', 'Ingresos', 'Egresos']].plot(kind='bar', x='Mes', ax=ax)
 ax.set_xlabel('Mes')
 ax.set_ylabel('Monto (S/)')
 st.pyplot(fig)
@@ -55,24 +60,8 @@ ax.set_ylabel('Monto (S/)')
 ax.legend()
 st.pyplot(fig)
 
-st.subheader("Producto más vendido y menos vendido por Mes")
-fig, ax = plt.subplots(2, 1, figsize=(10, 10))
-
-ventas_df.drop(['Ingresos', 'Egresos'], axis=1).set_index('Mes').idxmax(axis=1).value_counts().plot(kind='bar', ax=ax[0], color='blue')
-ax[0].set_title('Producto más vendido')
-ax[0].set_xlabel('Artículo')
-ax[0].set_ylabel('Cantidad Vendida')
-
-ventas_df.drop(['Ingresos', 'Egresos'], axis=1).set_index('Mes').idxmin(axis=1).value_counts().plot(kind='bar', ax=ax[1], color='red')
-ax[1].set_title('Producto menos vendido')
-ax[1].set_xlabel('Artículo')
-ax[1].set_ylabel('Cantidad Vendida')
-
-plt.tight_layout()
-st.pyplot(fig)
-
 st.subheader("Resumen de Ventas (en S/)")
 col1, col2, col3 = st.columns(3)
-col1.metric("Ingresos Totales", f"S/ {ventas_df['Ingresos'].sum():,.2f}")
-col2.metric("Egresos Totales", f"S/ {ventas_df['Egresos'].sum():,.2f}")
-col3.metric("Ganancia Neta", f"S/ {ventas_df['Ingresos'].sum() - ventas_df['Egresos'].sum():,.2f}")
+col1.metric("Ingresos Totales", f"S/ {ingresos_totales:,.2f}")
+col2.metric("Egresos Totales", f"S/ {egresos_totales:,.2f}")
+col3.metric("Ganancia Neta", f"S/ {ganancia_neta:,.2f}")
